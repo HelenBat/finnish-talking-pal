@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Finnish AI Tutor 🇫🇮</title>
+    <title>Finnish AI Tutor - Conversation Mode 🇫🇮</title>
     <style>
         * {
             box-sizing: border-box;
@@ -26,137 +26,139 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+            font-size: 1.6rem;
+            margin-bottom: 5px;
         }
         .subtitle {
             color: #555;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
         }
         .mic-button {
             background: #0055a4;
             color: white;
             border: none;
-            padding: 30px 60px;
-            font-size: 3rem;
-            border-radius: 100px;
-            margin: 20px auto;
+            padding: 25px 50px;
+            font-size: 2.5rem;
+            border-radius: 80px;
+            margin: 15px auto;
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            transition: transform 0.1s, box-shadow 0.1s;
+            transition: transform 0.1s;
             display: block;
         }
         .mic-button:active {
             transform: scale(0.96);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         .mic-button:disabled {
             opacity: 0.5;
-            transform: none;
         }
-        .box {
+        .chat-box {
             background: white;
-            padding: 20px;
-            margin: 20px 0;
             border-radius: 24px;
-            text-align: left;
+            margin: 15px 0;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
         }
-        .box h3 {
-            margin-top: 0;
-            margin-bottom: 12px;
+        .chat-header {
+            background: #003580;
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .clear-btn {
+            background: #c62828;
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            text-align: left;
+        }
+        .message-user {
+            background: #e3f2fd;
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin: 8px 0;
+            margin-left: 20%;
+            text-align: right;
+        }
+        .message-ai {
+            background: #e8f5e9;
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin: 8px 0;
+            margin-right: 20%;
+            border-left: 3px solid #2e7d32;
+        }
+        .message-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .current-box {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 20px;
+            text-align: left;
+        }
+        .current-label {
+            font-size: 0.8rem;
             color: #003580;
-            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         .transcript-text {
-            font-size: 1.2rem;
-            line-height: 1.5;
-            min-height: 70px;
+            font-size: 1.1rem;
             color: #1a1a2e;
-            font-weight: 500;
         }
         .response-text {
             font-size: 1rem;
-            line-height: 1.5;
-            min-height: 90px;
             color: #1a5d1a;
         }
         .status {
             color: #555;
-            font-size: 0.85rem;
-            margin-top: 15px;
-            padding: 10px;
+            font-size: 0.8rem;
+            padding: 8px;
             border-radius: 40px;
             background: white;
             text-align: center;
+            margin-top: 10px;
         }
         .button-group {
             display: flex;
-            gap: 12px;
-            margin-top: 15px;
-            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .listen-btn, .auto-btn {
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 40px;
+            cursor: pointer;
+            flex: 1;
         }
         .listen-btn {
             background: #2e7d32;
             color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 0.95rem;
-            border-radius: 40px;
-            cursor: pointer;
-            flex: 1;
-            transition: background 0.2s;
-        }
-        .listen-btn:active {
-            background: #1b5e20;
         }
         .auto-btn {
             background: #00695c;
             color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 0.95rem;
-            border-radius: 40px;
-            cursor: pointer;
-            flex: 1;
-            transition: background 0.2s;
-        }
-        .auto-btn:active {
-            background: #004d40;
-        }
-        .test-btn {
-            background: #ff6f00;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 0.85rem;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #0055a4;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        footer {
-            margin-top: 30px;
-            font-size: 0.7rem;
-            color: #888;
-            text-align: center;
         }
         .api-status {
             font-size: 0.7rem;
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 20px;
             display: inline-block;
             margin-bottom: 10px;
@@ -169,43 +171,77 @@
             background: #ffcdd2;
             color: #c62828;
         }
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0055a4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>
-        <span>🇫🇮</span> Finnish AI Tutor
-    </h1>
-    <div class="subtitle">Speak Finnish • Get AI Feedback • Improve</div>
+    <h1>🇫🇮 Finnish AI Tutor</h1>
+    <div class="subtitle">Conversation Mode • Remembers what you say</div>
     
     <div id="apiStatus" class="api-status api-offline">🔌 Checking API...</div>
     
     <button class="mic-button" id="recordBtn">🎤</button>
     
-    <div class="box">
-        <h3>📝 You said:</h3>
-        <div class="transcript-text" id="transcript">—</div>
+    <!-- Conversation History -->
+    <div class="chat-box">
+        <div class="chat-header">
+            <span>💬 Conversation</span>
+            <button id="clearHistoryBtn" class="clear-btn">🗑️ Clear</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div style="text-align: center; color: #888; padding: 20px;">
+                Tap the microphone and start speaking Finnish!
+            </div>
+        </div>
     </div>
     
-    <div class="box">
-        <h3>💬 AI Tutor:</h3>
-        <div class="response-text" id="response">Tap the 🎤 button and speak Finnish.</div>
+    <!-- Current exchange -->
+    <div class="current-box">
+        <div class="current-label">🎙️ You just said:</div>
+        <div class="transcript-text" id="transcript">—</div>
+        <div class="current-label" style="margin-top: 12px;">🤖 AI Response:</div>
+        <div class="response-text" id="response">—</div>
         <div class="button-group">
-            <button id="speakBtn" class="listen-btn">🔊 Listen</button>
+            <button id="speakBtn" class="listen-btn">🔊 Listen Again</button>
             <button id="autoSpeakBtn" class="auto-btn">🔁 Auto ON</button>
         </div>
     </div>
     
-    <div class="status" id="status">✅ Ready. Tap microphone to start.</div>
-    <footer>Speak clearly in Finnish. The AI will respond in Finnish.</footer>
+    <div class="status" id="status">✅ Ready. Tap microphone to start a conversation.</div>
+    <footer>Speak Finnish • AI remembers your conversation • Try saying "Hei, minun nimeni on..."</footer>
 </div>
 
 <script>
     // ============================================
     // CONFIGURATION
     // ============================================
-    // REPLACE THIS WITH YOUR RENDER BACKEND URL
-    const API_URL = "https://finnish-api.onrender.com";
+    const API_URL = "https://YOUR_API_URL.onrender.com/api/chat";
+    const HISTORY_URL = API_URL.replace('/api/chat', '/api/history');
+    
+    // Generate a unique session ID for this browser
+    let sessionId = localStorage.getItem('finnish_session_id');
+    if (!sessionId) {
+        sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        localStorage.setItem('finnish_session_id', sessionId);
+    }
     
     // ============================================
     // DOM ELEMENTS
@@ -217,12 +253,82 @@
     const autoSpeakBtn = document.getElementById('autoSpeakBtn');
     const statusDiv = document.getElementById('status');
     const apiStatusDiv = document.getElementById('apiStatus');
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     
     let recognition = null;
     let autoSpeak = true;
+    let conversationHistory = [];
     
     // ============================================
-    // CHECK API HEALTH ON PAGE LOAD
+    // LOAD CONVERSATION HISTORY FROM BACKEND
+    // ============================================
+    async function loadConversationHistory() {
+        try {
+            const response = await fetch(`${HISTORY_URL}/${sessionId}`);
+            if (response.ok) {
+                const data = await response.json();
+                conversationHistory = data.history || [];
+                renderChatMessages();
+            }
+        } catch (error) {
+            console.log("Could not load history from server");
+        }
+    }
+    
+    // ============================================
+    // RENDER CHAT MESSAGES
+    // ============================================
+    function renderChatMessages() {
+        if (!conversationHistory || conversationHistory.length === 0) {
+            chatMessagesDiv.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No messages yet. Start speaking!</div>';
+            return;
+        }
+        
+        let html = '';
+        for (let i = 0; i < conversationHistory.length; i++) {
+            const exchange = conversationHistory[i];
+            html += `
+                <div class="message-user">
+                    <div class="message-label">You</div>
+                    ${escapeHtml(exchange.user)}
+                </div>
+                <div class="message-ai">
+                    <div class="message-label">AI Tutor</div>
+                    ${escapeHtml(exchange.assistant)}
+                </div>
+            `;
+        }
+        chatMessagesDiv.innerHTML = html;
+        // Auto-scroll to bottom
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // ============================================
+    // CLEAR CONVERSATION HISTORY
+    // ============================================
+    async function clearHistory() {
+        try {
+            await fetch(`${HISTORY_URL}/${sessionId}`, { method: 'DELETE' });
+            conversationHistory = [];
+            renderChatMessages();
+            responseDiv.innerHTML = "Conversation cleared! Start a new topic.";
+            statusDiv.innerHTML = "🗑️ Conversation cleared. Tap microphone to start fresh.";
+        } catch (error) {
+            console.error("Failed to clear history:", error);
+        }
+    }
+    
+    clearHistoryBtn.onclick = clearHistory;
+    
+    // ============================================
+    // CHECK API HEALTH
     // ============================================
     async function checkAPI() {
         try {
@@ -231,32 +337,32 @@
                 headers: { 'Content-Type': 'application/json' }
             });
             if (response.ok) {
-                apiStatusDiv.innerHTML = '✅ API Online';
+                apiStatusDiv.innerHTML = '✅ API Online • Memory Active';
                 apiStatusDiv.className = 'api-status api-online';
             } else {
                 apiStatusDiv.innerHTML = '⚠️ API Error';
                 apiStatusDiv.className = 'api-status api-offline';
             }
         } catch (error) {
-            apiStatusDiv.innerHTML = '❌ API Offline - Check Render';
+            apiStatusDiv.innerHTML = '❌ API Offline';
             apiStatusDiv.className = 'api-status api-offline';
-            console.error("API check failed:", error);
         }
     }
     
     // ============================================
-    // AI RESPONSE VIA YOUR BACKEND
+    // AI RESPONSE WITH MEMORY
     // ============================================
     async function getAIResponse(userText) {
         try {
-            statusDiv.innerHTML = "🤖 AI is thinking...";
+            statusDiv.innerHTML = "🤖 AI is thinking... (remembering conversation)";
             
             const response = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userText: userText })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    userText: userText,
+                    sessionId: sessionId
+                })
             });
             
             if (!response.ok) {
@@ -266,116 +372,98 @@
             const data = await response.json();
             
             if (data.reply) {
-                statusDiv.innerHTML = "✅ Response received";
+                // Update local conversation history
+                conversationHistory.push({ user: userText, assistant: data.reply });
+                renderChatMessages();
+                statusDiv.innerHTML = `✅ ${data.historyLength} exchanges in this conversation`;
                 return data.reply;
-            } else if (data.error) {
-                throw new Error(data.error);
             } else {
-                throw new Error("Invalid response from server");
+                throw new Error("Invalid response");
             }
             
         } catch (error) {
             console.error("API Error:", error);
-            statusDiv.innerHTML = `⚠️ API Error: ${error.message}`;
-            return getFallbackResponse(userText);
+            statusDiv.innerHTML = `⚠️ Error: ${error.message}`;
+            const fallback = getFallbackResponse(userText);
+            conversationHistory.push({ user: userText, assistant: fallback });
+            renderChatMessages();
+            return fallback;
         }
     }
     
-    // Fallback responses when backend is unavailable
     function getFallbackResponse(userText) {
         const text = userText.toLowerCase();
-        if (text.includes('hei') || text.includes('terve') || text.includes('moi')) {
-            return "Hei! Mitä kuuluu? Olen iloinen että harjoittelet suomea!";
+        const lastMessage = conversationHistory.length > 0 ? conversationHistory[conversationHistory.length-1] : null;
+        
+        if ((text.includes('hei') || text.includes('terve')) && (!lastMessage || !lastMessage.assistant.includes('Hei'))) {
+            return "Hei! Mitä kuuluu? Mikä sinun nimesi on?";
+        }
+        if (text.includes('nimeni') || text.includes('nimi on')) {
+            return "Kiva tavata! Kerro minulle lisää itsestäsi. Mistä olet kotoisin?";
+        }
+        if (text.includes('suomi') || text.includes('suomesta')) {
+            return "Suomi on kaunis maa! Oletko käynyt siellä?";
         }
         if (text.includes('kiitos')) {
-            return "Ole hyvä! Oletko oppinut uusia sanoja tänään?";
+            return "Ole hyvä! Jatketaanko keskustelua?";
         }
-        if (text.includes('anteeksi')) {
-            return "Ei hätää! Harjoitteleminen on tärkeää. Voitko sanoa uudestaan?";
-        }
-        if (text.includes('kuuluu')) {
-            return "Minulle kuuluu hyvää! Kiitos kysymästä. Entä sinulle?";
-        }
-        if (text.includes('suomi') || text.includes('suomea')) {
-            return "Suomi on kaunis kieli! Jatka harjoittelua, olet hyvä!";
-        }
-        if (text.includes('nimi')) {
-            return "Minun nimeni on Suomen AI-opettaja. Mikä on sinun nimesi?";
-        }
-        return `Kuulin: "${userText}". Hyvä! Jatketaan suomen harjoittelua. Kysy minulta mitä vain!`;
+        
+        return `Kuulin: "${userText}". Hyvä! ${getRandomQuestion()}`;
+    }
+    
+    function getRandomQuestion() {
+        const questions = [
+            "Mitä teet työksesi?",
+            "Mitä harrastat?",
+            "Miksi haluat oppia suomea?",
+            "Mikä on suosikki suomen sanasi?",
+            "Oletko käynyt Suomessa?"
+        ];
+        return questions[Math.floor(Math.random() * questions.length)];
     }
     
     // ============================================
-    // TEXT TO SPEECH (Finnish)
+    // TEXT TO SPEECH
     // ============================================
     function speakFinnish(text) {
-        if (!window.speechSynthesis) {
-            console.log("Speech synthesis not supported");
-            return;
-        }
-        
-        // Cancel any ongoing speech
+        if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-        
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'fi-FI';
         utterance.rate = 0.85;
-        utterance.pitch = 1.0;
-        
-        // Try to find a Finnish voice
         const voices = window.speechSynthesis.getVoices();
-        const finnishVoice = voices.find(voice => voice.lang === 'fi-FI');
-        if (finnishVoice) {
-            utterance.voice = finnishVoice;
-        }
-        
-        utterance.onstart = () => {
-            if (!autoSpeak) statusDiv.innerHTML = "🔊 Speaking...";
-        };
-        
-        utterance.onend = () => {
-            if (!autoSpeak) statusDiv.innerHTML = "✅ Ready for next phrase";
-        };
-        
+        const finnishVoice = voices.find(v => v.lang === 'fi-FI');
+        if (finnishVoice) utterance.voice = finnishVoice;
         window.speechSynthesis.speak(utterance);
     }
     
     // ============================================
-    // SPEECH RECOGNITION (Finnish)
+    // SPEECH RECOGNITION
     // ============================================
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.lang = 'fi-FI';
         recognition.continuous = false;
         recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
         
         recognition.onstart = () => {
-            statusDiv.innerHTML = "🎙️ Listening... Speak Finnish now";
+            statusDiv.innerHTML = "🎙️ Listening... Speak Finnish";
             recordBtn.style.opacity = '0.6';
-            transcriptDiv.innerHTML = "...";
         };
         
         recognition.onend = () => {
             recordBtn.style.opacity = '1';
-            if (statusDiv.innerHTML.includes("Listening")) {
-                statusDiv.innerHTML = "⏹️ Stopped listening";
-            }
         };
         
         recognition.onresult = async (event) => {
             const userText = event.results[0][0].transcript;
             transcriptDiv.innerHTML = userText;
-            statusDiv.innerHTML = `📝 Recognized: "${userText}"`;
+            statusDiv.innerHTML = `📝 "${userText}"`;
             
-            // Show loading in response area
-            responseDiv.innerHTML = '<span class="loading"></span> AI is thinking...';
-            
-            // Get AI response from backend
+            responseDiv.innerHTML = '<span class="loading"></span> Thinking...';
             const aiResponse = await getAIResponse(userText);
             responseDiv.innerHTML = aiResponse;
             
-            // Auto-speak if enabled
             if (autoSpeak) {
                 speakFinnish(aiResponse);
                 statusDiv.innerHTML = "🔊 Speaking response...";
@@ -385,42 +473,26 @@
         };
         
         recognition.onerror = (event) => {
-            console.error("Recognition error:", event.error);
-            
-            if (event.error === 'not-allowed') {
-                statusDiv.innerHTML = "❌ Microphone access denied. Check Chrome permissions.";
-            } else if (event.error === 'no-speech') {
-                statusDiv.innerHTML = "❌ No speech detected. Try again and speak clearly.";
-            } else {
-                statusDiv.innerHTML = `❌ Error: ${event.error}. Try again.`;
-            }
+            statusDiv.innerHTML = `❌ ${event.error}. Try again.`;
             recordBtn.style.opacity = '1';
         };
         
         recordBtn.onclick = () => {
             try {
                 recognition.start();
-            } catch (e) {
+            } catch(e) {
                 statusDiv.innerHTML = `Error: ${e.message}`;
             }
         };
-        
     } else {
-        statusDiv.innerHTML = "❌ Speech recognition not supported. Use Chrome on Android.";
+        statusDiv.innerHTML = "❌ Use Chrome on Android for speech recognition";
         recordBtn.disabled = true;
-        recordBtn.style.opacity = '0.5';
     }
     
-    // ============================================
-    // BUTTON HANDLERS
-    // ============================================
     speakBtn.onclick = () => {
-        const responseText = responseDiv.innerText;
-        if (responseText && !responseText.includes("Tap the") && !responseText.includes("thinking")) {
-            speakFinnish(responseText);
-            statusDiv.innerHTML = "🔊 Speaking...";
-        } else {
-            statusDiv.innerHTML = "No response to speak yet. Speak into microphone first.";
+        const text = responseDiv.innerText;
+        if (text && !text.includes('Thinking')) {
+            speakFinnish(text);
         }
     };
     
@@ -428,21 +500,12 @@
         autoSpeak = !autoSpeak;
         autoSpeakBtn.textContent = autoSpeak ? "🔁 Auto ON" : "🔇 Auto OFF";
         autoSpeakBtn.style.background = autoSpeak ? "#00695c" : "#757575";
-        statusDiv.innerHTML = autoSpeak ? "Auto-speak ON - responses will be spoken automatically" : "Auto-speak OFF - tap Listen button to hear responses";
     };
     
-    // Load voices when page is ready
-    if (window.speechSynthesis) {
-        window.speechSynthesis.getVoices();
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-        }
-    }
-    
-    // Check API status on load
+    // Initialize
     checkAPI();
-    
-    console.log("Finnish AI Tutor ready! API URL:", API_URL);
+    loadConversationHistory();
+    setInterval(checkAPI, 60000); // Check API every minute
 </script>
 </body>
 </html>
