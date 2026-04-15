@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finnish Talking Pal 🇫🇮 - AI Tutor</title>
+    <title>Finnish AI Tutor 🇫🇮</title>
     <style>
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -13,15 +13,27 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        button {
+        h1 {
+            color: #003580;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .mic-button {
             background: #0055a4;
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            border-radius: 60px;
+            padding: 25px 50px;
+            font-size: 2rem;
+            border-radius: 80px;
             margin: 20px;
             cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .mic-button:active {
+            transform: scale(0.95);
         }
         .box {
             background: white;
@@ -35,27 +47,48 @@
             color: #666;
             font-size: 0.9rem;
             margin-top: 10px;
+            padding: 8px;
+            border-radius: 12px;
+            background: #e8eef3;
         }
         .listen-btn {
             background: #2e7d32;
+            color: white;
+            border: none;
             padding: 12px 24px;
             font-size: 1rem;
+            border-radius: 40px;
             margin-top: 10px;
+            cursor: pointer;
         }
-        input {
-            width: 100%;
-            padding: 12px;
+        .auto-btn {
+            background: #00695c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 12px;
-            margin: 10px 0;
+            border-radius: 40px;
+            margin-top: 10px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .transcript-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            min-height: 60px;
+        }
+        .response-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            min-height: 80px;
+            color: #1a5d1a;
         }
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #0055a4;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0055a4;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -63,40 +96,43 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <h1>🇫🇮 Finnish Talking Pal Pro</h1>
-    <p>AI Tutor that learns from YOUR materials</p>
+    <h1>
+        <span>🇫🇮</span> Finnish AI Tutor
+    </h1>
+    <p>Speak Finnish. Get AI feedback. Improve.</p>
     
-    <button id="recordBtn">🎤 Speak Finnish</button>
+    <button class="mic-button" id="recordBtn">🎤</button>
     
     <div class="box">
         <h3>📝 You said:</h3>
-        <div id="transcript">—</div>
+        <div class="transcript-text" id="transcript">—</div>
     </div>
     
     <div class="box">
-        <h3>💬 AI Tutor Response:</h3>
-        <div id="response">Ready. Tap the microphone and speak Finnish!</div>
-        <button id="speakBtn" class="listen-btn">🔊 Listen to Response</button>
-        <button id="autoSpeakBtn" class="listen-btn" style="background:#00695c;">🔁 Auto-speak ON</button>
+        <h3>💬 AI Tutor:</h3>
+        <div class="response-text" id="response">Tap the microphone and speak Finnish.</div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button id="speakBtn" class="listen-btn">🔊 Listen</button>
+            <button id="autoSpeakBtn" class="auto-btn">🔁 Auto ON</button>
+        </div>
     </div>
     
-    <div class="box">
-        <h3>📚 Your Learning Materials</h3>
-        <input type="file" id="materialUpload" accept=".txt,.pdf">
-        <div id="materialStatus">No materials uploaded yet</div>
-    </div>
-    
-    <div class="status" id="status">Ready</div>
+    <div class="status" id="status">✅ Ready. Tap microphone to start.</div>
+    <footer>Speak clearly in Finnish. The AI will respond in Finnish.</footer>
 
     <script>
        
         const GEMINI_API_KEY = "AIzaSyDiaGG8a02xT76H6HLUfZFEa5xLopf9QrY";  
-        
         // ============================================
-        // SPEECH RECOGNITION
+        // ELEMENTS
         // ============================================
         const recordBtn = document.getElementById('recordBtn');
         const transcriptDiv = document.getElementById('transcript');
@@ -104,71 +140,40 @@
         const speakBtn = document.getElementById('speakBtn');
         const autoSpeakBtn = document.getElementById('autoSpeakBtn');
         const statusDiv = document.getElementById('status');
-        const materialUpload = document.getElementById('materialUpload');
-        const materialStatus = document.getElementById('materialStatus');
         
         let recognition = null;
         let autoSpeak = true;
-        let userMaterials = "";  // Stores your uploaded learning materials
         
-        // Toggle auto-speak
-        autoSpeakBtn.onclick = () => {
-            autoSpeak = !autoSpeak;
-            autoSpeakBtn.textContent = autoSpeak ? "🔁 Auto-speak ON" : "🔇 Auto-speak OFF";
-            autoSpeakBtn.style.background = autoSpeak ? "#00695c" : "#757575";
-        };
-        
-        // Upload your learning materials
-        materialUpload.onchange = async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            materialStatus.innerHTML = "📖 Loading your materials...";
-            
-            if (file.type === "text/plain") {
-                const text = await file.text();
-                userMaterials = text;
-                materialStatus.innerHTML = `✅ Loaded: ${file.name} (${text.length} characters)`;
-            } else if (file.type === "application/pdf") {
-                // For PDF, you'd need a PDF parser library
-                materialStatus.innerHTML = "⚠️ PDF support coming soon. Use .txt files for now.";
-            } else {
-                materialStatus.innerHTML = "❌ Please upload a .txt file";
-            }
-        };
-        
-        // AI response using Google Gemini (FREE)
+        // ============================================
+        // AI RESPONSE USING GEMINI (FREE)
+        // ============================================
         async function getAIResponse(userText) {
+            // Check if API key is configured
             if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
-                // Fallback to simple responses if no API key
-                return fallbackResponse(userText);
+                statusDiv.innerHTML = "⚠️ Please add your Gemini API key (get free from aistudio.google.com)";
+                return getFallbackResponse(userText);
             }
             
             try {
                 statusDiv.innerHTML = "🤖 AI is thinking...";
                 
-                // Build prompt with user's learning materials if uploaded
-                let systemPrompt = `You are a friendly Finnish language tutor. The student is practicing spoken Finnish.
-                
-Rules:
-1. Respond in Finnish (use English only if student is absolute beginner)
-2. Keep responses short (1-2 sentences for beginners, 2-3 for intermediates)
-3. If the student makes an error, gently correct it
-4. Be encouraging and positive
-5. Ask a follow-up question to continue the conversation`;
+                const prompt = `You are a Finnish language tutor. The student just said: "${userText}"
 
-                if (userMaterials) {
-                    systemPrompt += `\n\nUse these learning materials as your primary source for vocabulary and grammar:\n${userMaterials.substring(0, 3000)}`;
-                }
+Rules:
+1. Respond in Finnish
+2. Keep response short (1-3 sentences)
+3. If there are errors, gently correct them
+4. Be encouraging
+5. End with a simple follow-up question
+
+Your response:`;
                 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
-                            parts: [{
-                                text: `${systemPrompt}\n\nStudent said: "${userText}"\n\nYour response as tutor:`
-                            }]
+                            parts: [{ text: prompt }]
                         }],
                         generationConfig: {
                             temperature: 0.7,
@@ -181,115 +186,178 @@ Rules:
                 
                 if (data.error) {
                     console.error("API Error:", data.error);
-                    return fallbackResponse(userText);
+                    statusDiv.innerHTML = `⚠️ API Error: ${data.error.message}`;
+                    return getFallbackResponse(userText);
                 }
                 
                 const aiResponse = data.candidates[0].content.parts[0].text;
+                statusDiv.innerHTML = "✅ Response ready";
                 return aiResponse;
                 
             } catch (error) {
                 console.error("AI Error:", error);
-                return fallbackResponse(userText);
+                statusDiv.innerHTML = `⚠️ Network error: ${error.message}`;
+                return getFallbackResponse(userText);
             }
         }
         
-        function fallbackResponse(userText) {
+        // Fallback responses when AI is unavailable
+        function getFallbackResponse(userText) {
             const text = userText.toLowerCase();
-            if (text.includes('hei') || text.includes('terve')) {
+            if (text.includes('hei') || text.includes('terve') || text.includes('moi')) {
                 return "Hei! Mitä kuuluu? Olen iloinen että harjoittelet suomea!";
             }
             if (text.includes('kiitos')) {
                 return "Ole hyvä! Oletko oppinut uusia sanoja tänään?";
             }
             if (text.includes('anteeksi')) {
-                return "Ei hätää! Harjoitteleminen on tärkeää. Sano uudestaan?";
+                return "Ei hätää! Harjoitteleminen on tärkeää. Voitko sanoa uudestaan?";
             }
-            return `Kuulin: "${userText}". Hyvä! Jatketaan harjoittelua. Voit kysyä minulta mitä vain suomeksi!`;
+            if (text.includes('kuuluu')) {
+                return "Minulle kuuluu hyvää! Kiitos kysymästä. Entä sinulle?";
+            }
+            if (text.includes('suomi') || text.includes('suomea')) {
+                return "Suomi on kaunis kieli! Jatka harjoittelua, olet hyvä!";
+            }
+            return `Kuulin: "${userText}". Hyvä! Jatketaan suomen harjoittelua. Kysy minulta mitä vain!`;
         }
         
-        // Text-to-speech
+        // ============================================
+        // TEXT TO SPEECH (Finnish)
+        // ============================================
         function speakFinnish(text) {
-            if (!window.speechSynthesis) return;
+            if (!window.speechSynthesis) {
+                console.log("Speech synthesis not supported");
+                return;
+            }
             
+            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
+            
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'fi-FI';
-            utterance.rate = 0.85;
+            utterance.rate = 0.85;  // Slightly slower for learners
             utterance.pitch = 1.0;
             
-            // Try to get Finnish voice
+            // Try to find a Finnish voice for better pronunciation
             const voices = window.speechSynthesis.getVoices();
-            const finnishVoice = voices.find(v => v.lang === 'fi-FI');
-            if (finnishVoice) utterance.voice = finnishVoice;
+            const finnishVoice = voices.find(voice => voice.lang === 'fi-FI');
+            if (finnishVoice) {
+                utterance.voice = finnishVoice;
+            }
+            
+            utterance.onstart = () => {
+                if (!autoSpeak) statusDiv.innerHTML = "🔊 Speaking...";
+            };
+            
+            utterance.onend = () => {
+                if (!autoSpeak) statusDiv.innerHTML = "✅ Ready for next phrase";
+            };
             
             window.speechSynthesis.speak(utterance);
         }
         
-        // Speech recognition setup
+        // ============================================
+        // SPEECH RECOGNITION (Finnish)
+        // ============================================
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
             recognition.lang = 'fi-FI';
             recognition.continuous = false;
             recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
             
             recognition.onstart = () => {
-                statusDiv.innerHTML = '🎙️ Listening... Speak Finnish';
-                recordBtn.style.opacity = '0.5';
+                statusDiv.innerHTML = "🎙️ Listening... Speak Finnish now";
+                recordBtn.style.opacity = '0.6';
+                transcriptDiv.innerHTML = "...";
             };
             
             recognition.onend = () => {
-                statusDiv.innerHTML = '✅ Listening stopped';
                 recordBtn.style.opacity = '1';
+                if (statusDiv.innerHTML.includes("Listening")) {
+                    statusDiv.innerHTML = "⏹️ Stopped listening";
+                }
             };
             
             recognition.onresult = async (event) => {
                 const userText = event.results[0][0].transcript;
                 transcriptDiv.innerHTML = userText;
-                statusDiv.innerHTML = '📝 Recognizing...';
+                statusDiv.innerHTML = `📝 Recognized: "${userText}"`;
                 
                 // Get AI response
+                responseDiv.innerHTML = '<span class="loading"></span> Thinking...';
                 const aiResponse = await getAIResponse(userText);
                 responseDiv.innerHTML = aiResponse;
                 
                 // Auto-speak if enabled
                 if (autoSpeak) {
                     speakFinnish(aiResponse);
-                    statusDiv.innerHTML = '🔊 Speaking response...';
+                    statusDiv.innerHTML = "🔊 Speaking response...";
                 } else {
-                    statusDiv.innerHTML = '✅ Response ready. Tap green button to hear it.';
+                    statusDiv.innerHTML = "✅ Response ready. Tap 'Listen' to hear it.";
                 }
             };
             
             recognition.onerror = (event) => {
-                statusDiv.innerHTML = `* Error: ${event.error}. Try again.`;
+                console.error("Recognition error:", event.error);
+                
+                // Handle specific errors
+                if (event.error === 'not-allowed') {
+                    statusDiv.innerHTML = "❌ Microphone access denied. Check Chrome permissions.";
+                } else if (event.error === 'no-speech') {
+                    statusDiv.innerHTML = "❌ No speech detected. Try again and speak clearly.";
+                } else {
+                    statusDiv.innerHTML = `❌ Error: ${event.error}. Try again.`;
+                }
                 recordBtn.style.opacity = '1';
             };
             
             recordBtn.onclick = () => {
                 try {
                     recognition.start();
-                } catch(e) {
-                    statusDiv.innerHTML = 'Error: ' + e.message;
+                } catch (e) {
+                    statusDiv.innerHTML = `Error: ${e.message}`;
                 }
             };
+            
         } else {
-            statusDiv.innerHTML = ' Speech recognition not supported. Use Chrome on Android.';
+            statusDiv.innerHTML = "❌ Speech recognition not supported. Use Chrome on Android.";
             recordBtn.disabled = true;
+            recordBtn.style.opacity = '0.5';
         }
         
+        // ============================================
+        // BUTTON HANDLERS
+        // ============================================
         speakBtn.onclick = () => {
-            const text = responseDiv.innerText;
-            if (text && text !== 'Ready. Tap the microphone and speak Finnish!') {
-                speakFinnish(text);
+            const responseText = responseDiv.innerText;
+            if (responseText && !responseText.includes("Tap the microphone") && !responseText.includes("Thinking")) {
+                speakFinnish(responseText);
+                statusDiv.innerHTML = "🔊 Speaking...";
+            } else {
+                statusDiv.innerHTML = "No response to speak yet. Speak into microphone first.";
             }
         };
         
-        // Load voices
+        autoSpeakBtn.onclick = () => {
+            autoSpeak = !autoSpeak;
+            autoSpeakBtn.textContent = autoSpeak ? "🔁 Auto ON" : "🔇 Auto OFF";
+            autoSpeakBtn.style.background = autoSpeak ? "#00695c" : "#757575";
+            statusDiv.innerHTML = autoSpeak ? "Auto-speak ON - responses will be spoken automatically" : "Auto-speak OFF - tap Listen button to hear responses";
+        };
+        
+        // Load voices when page is ready
         if (window.speechSynthesis) {
+            // Trigger voice loading
             window.speechSynthesis.getVoices();
+            // Some browsers need this to load voices properly
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
         }
         
-        statusDiv.innerHTML = '✅ Ready! Tap microphone and speak Finnish.';
+        console.log("Finnish AI Tutor ready!");
     </script>
 </body>
 </html>
