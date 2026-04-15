@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finnish Talking Pal 🇫🇮</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f0f4f8;
+        }
+        button {
+            background: #0055a4;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 60px;
+            margin: 20px;
+            cursor: pointer;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 20px;
+            text-align: left;
+        }
+        .status {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>🇫🇮 Finnish Talking Pal</h1>
+    
+    <button id="recordBtn">🎤 Speak Finnish</button>
+    
+    <div class="box">
+        <h3>You said:</h3>
+        <div id="transcript">—</div>
+    </div>
+    
+    <div class="box">
+        <h3>Response:</h3>
+        <div id="response">Tap the button and speak Finnish</div>
+        <button id="speakBtn" style="background:#2e7d32; padding:10px 20px; font-size:1rem;">🔊 Listen</button>
+    </div>
+    
+    <div class="status" id="status">Ready</div>
+
+    <script>
+        const recordBtn = document.getElementById('recordBtn');
+        const transcriptDiv = document.getElementById('transcript');
+        const responseDiv = document.getElementById('response');
+        const speakBtn = document.getElementById('speakBtn');
+        const statusDiv = document.getElementById('status');
+        
+        let recognition = null;
+        
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'fi-FI';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onstart = function() {
+                statusDiv.innerHTML = '🎙️ Listening... Speak Finnish now';
+                recordBtn.style.opacity = '0.5';
+            };
+            
+            recognition.onend = function() {
+                statusDiv.innerHTML = '✅ Stopped listening';
+                recordBtn.style.opacity = '1';
+            };
+            
+            recognition.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                transcriptDiv.innerHTML = text;
+                statusDiv.innerHTML = '✅ Recognized: "' + text + '"';
+                
+                // Simple response
+                let response = 'Hei! Hyvä että puhut suomea! Sano "Hei" uudestaan.';
+                if (text.toLowerCase().includes('hei')) {
+                    response = 'Hei! Mitä kuuluu? Olen iloinen!';
+                } else if (text.toLowerCase().includes('kiitos')) {
+                    response = 'Ole hyvä! Hyvä suomen kielen taito!';
+                } else if (text.length > 2) {
+                    response = 'Kuulin: "' + text + '". Jatka samaan malliin!';
+                }
+                
+                responseDiv.innerHTML = response;
+                statusDiv.innerHTML = '✅ Ready. Tap "Listen" to hear response.';
+            };
+            
+            recognition.onerror = function(event) {
+                statusDiv.innerHTML = 'Error: ' + event.error + '. Try again.';
+                recordBtn.style.opacity = '1';
+            };
+            
+            recordBtn.onclick = function() {
+                try {
+                    recognition.start();
+                    statusDiv.innerHTML = 'Starting...';
+                } catch(e) {
+                    statusDiv.innerHTML = 'Error: ' + e.message;
+                }
+            };
+        } else {
+            statusDiv.innerHTML = 'Browser does not support speech recognition. Use Chrome on Android.';
+            recordBtn.disabled = true;
+        }
+        
+        // Text to speech
+        speakBtn.onclick = function() {
+            const text = responseDiv.innerText;
+            if (text && text !== 'Tap the button and speak Finnish') {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'fi-FI';
+                window.speechSynthesis.speak(utterance);
+                statusDiv.innerHTML = '🔊 Speaking...';
+            }
+        };
+    </script>
+</body>
+</html>
